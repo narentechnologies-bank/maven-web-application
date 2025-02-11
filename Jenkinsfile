@@ -1,23 +1,21 @@
 node{
 def mavenHOME = tool name: 'maven3.9.9', type: 'maven'
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '3'))])
-stage ('CheckOutCode'){
-git branch: 'development', credentialsId: '61e40864-2209-4b34-b9b4-0a17dbf498c2', url: 'https://github.com/narentechnologies-bank/maven-web-application.git'
+stage ('CheckOutCode') {
+git branch: 'development', credentialsId: '948de7bd-e500-478d-bd8b-a14fd9865ba4', url: 'https://github.com/narentechnologies-bank/maven-web-application.git'
 }
-stage ('Build'){
+stage ('Build') {
 sh "${mavenHOME}/bin/mvn clean package"
 }
-stage ('ExecuteSonarQubeReport'){
-sh "${mavenHOME}/bin/mvn clean sonar:sonar"
+stage ('ExecuteSonarQubeReport') {
+sh "${mavenHOME}/bin/mvn clean package sonar:sonar"
 }
-stage ('UploadArtfactsIntoNexus'){
-sh "${mavenHOME}/bin/mvn clean deploy"
+stage ('UploadArtifactsIntoNexus') {
+sh "${mavenHOME}/bin/mvn clean package sonar:sonar deploy"
 }
-stage ('DeployAppIntoTomcatServer'){
-sshagent(['46873769-85fa-4569-ad9a-be0982a937d6']){
-    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@172.31.9.159:/opt/apache-tomcat-9.0.98/webapps/"
-
-}
-}//stage closing
-
+stage ('DeployAppIntoTomcatServer') {
+sshagent(['af76b1a4-2ab3-43c7-8fa3-ecc93be55adb']) {
+sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@172.31.12.129:/opt/apache-tomcat-9.0.98/webapps/"
+}//closing sshagent
+}//closing stage
 }//node closing
